@@ -1,1 +1,1 @@
-mod starknetid;
+mod identity;

@@ -1,7 +1,7 @@
 use starknet::ContractAddress;
 
 #[starknet::interface]
-trait IStarknetId<TContractState> {
+trait IIdentity<TContractState> {
     fn get_user_data(
         self: @TContractState, starknet_id: felt252, field: felt252, domain: felt252
     ) -> felt252;

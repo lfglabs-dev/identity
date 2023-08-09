@@ -1,2 +1,2 @@
-mod starknetid;
+mod identity;
 mod interface;

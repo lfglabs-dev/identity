@@ -15,4 +15,7 @@ starknet = "2.1.0"
 sierra = true
 casm = true
 casm-add-pythonic-hints = true
-allowed-libfuncs-list.name = "experimental"
+
+[lib]
+sierra = true 
+casm = false

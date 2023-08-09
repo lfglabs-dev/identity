@@ -8,9 +8,7 @@ mod StarknetId {
     use array::{ArrayTrait, SpanTrait};
     use zeroable::Zeroable;
     use starknet::class_hash::ClassHash;
-    use identity::interface::starknetid::{
-        IStarknetId, IStarknetIdDispatcher, IStarknetIdDispatcherTrait
-    };
+    use identity::interface::identity::{IIdentity, IIdentityDispatcher, IIdentityDispatcherTrait};
     use integer::{u256_safe_divmod, u256_as_non_zero};
     use core::pedersen;
 
@@ -22,7 +20,7 @@ mod StarknetId {
     fn constructor(ref self: ContractState) {}
 
     #[external(v0)]
-    impl NamingImpl of IStarknetId<ContractState> {
+    impl NamingImpl of IIdentity<ContractState> {
         fn get_user_data(
             self: @ContractState, starknet_id: felt252, field: felt252, domain: felt252
         ) -> felt252 {
