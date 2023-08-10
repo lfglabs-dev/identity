@@ -33,16 +33,28 @@ mod StarknetId {
 
 
         fn get_verifier_data(
-            self: @ContractState, id: u128, field: felt252, domain: felt252
+            self: @ContractState,
+            id: u128,
+            field: felt252,
+            verifier: ContractAddress,
+            domain: felt252
         ) -> felt252 {
             1
         }
 
 
         fn get_crosschecked_verifier_data(
-            self: @ContractState, id: u128, field: felt252
+            self: @ContractState, id: u128, field: felt252, verifier: ContractAddress
         ) -> felt252 {
             1
         }
+
+        fn set_verifier_data(
+            ref self: ContractState,
+            id: u128,
+            field: felt252,
+            verifier: ContractAddress,
+            domain: felt252
+        ) {}
     }
 }
