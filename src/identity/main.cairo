@@ -49,12 +49,6 @@ mod StarknetId {
             1
         }
 
-        fn set_verifier_data(
-            ref self: ContractState,
-            id: u128,
-            field: felt252,
-            verifier: ContractAddress,
-            domain: felt252
-        ) {}
+        fn set_verifier_data(ref self: ContractState, id: u128, field: felt252, domain: felt252) {}
     }
 }

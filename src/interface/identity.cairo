@@ -14,11 +14,5 @@ trait IIdentity<TContractState> {
         self: @TContractState, id: u128, field: felt252, verifier: ContractAddress
     ) -> felt252;
 
-    fn set_verifier_data(
-        ref self: TContractState,
-        id: u128,
-        field: felt252,
-        verifier: ContractAddress,
-        domain: felt252
-    );
+    fn set_verifier_data(ref self: TContractState, id: u128, field: felt252, domain: felt252);
 }
