@@ -22,27 +22,25 @@ mod StarknetId {
     #[external(v0)]
     impl NamingImpl of IIdentity<ContractState> {
         fn get_user_data(
-            self: @ContractState, starknet_id: felt252, field: felt252, domain: felt252
+            self: @ContractState, id: u128, field: felt252, domain: felt252
         ) -> felt252 {
             1
         }
 
-        fn get_crosschecked_user_data(
-            self: @ContractState, starknet_id: felt252, field: felt252
-        ) -> felt252 {
+        fn get_crosschecked_user_data(self: @ContractState, id: u128, field: felt252) -> felt252 {
             1
         }
 
 
         fn get_verifier_data(
-            self: @ContractState, starknet_id: felt252, field: felt252, domain: felt252
+            self: @ContractState, id: u128, field: felt252, domain: felt252
         ) -> felt252 {
             1
         }
 
 
         fn get_crosschecked_verifier_data(
-            self: @ContractState, starknet_id: felt252, field: felt252
+            self: @ContractState, id: u128, field: felt252
         ) -> felt252 {
             1
         }
