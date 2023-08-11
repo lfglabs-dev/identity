@@ -21,6 +21,10 @@ mod StarknetId {
 
     #[external(v0)]
     impl NamingImpl of IIdentity<ContractState> {
+        fn owner_of(self: @ContractState, id: u128) -> ContractAddress {
+            ContractAddressZeroable::zero()
+        }
+
         fn get_user_data(
             self: @ContractState, id: u128, field: felt252, domain: felt252
         ) -> felt252 {
