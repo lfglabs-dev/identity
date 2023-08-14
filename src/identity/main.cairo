@@ -1,6 +1,6 @@
 use core::array::SpanTrait;
 #[starknet::contract]
-mod StarknetId {
+mod Identity {
     use starknet::ContractAddress;
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::{get_caller_address, get_contract_address};
