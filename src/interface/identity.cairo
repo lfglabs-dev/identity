@@ -16,5 +16,15 @@ trait IIdentity<TContractState> {
         self: @TContractState, id: u128, field: felt252, verifier: ContractAddress
     ) -> felt252;
 
-    fn set_verifier_data(ref self: TContractState, id: u128, field: felt252, domain: felt252);
+    fn mint(ref self: TContractState, id: u128);
+
+    // todo: add support for multifelts data
+
+    fn set_user_data(
+        ref self: TContractState, id: u128, field: felt252, data: felt252, domain: felt252
+    );
+
+    fn set_verifier_data(
+        ref self: TContractState, id: u128, field: felt252, data: felt252, domain: felt252
+    );
 }
