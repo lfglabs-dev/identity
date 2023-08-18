@@ -16,7 +16,11 @@ trait IIdentity<TContractState> {
         self: @TContractState, id: u128, field: felt252, verifier: ContractAddress
     ) -> felt252;
 
+    fn get_main_id(self: @TContractState, user: ContractAddress) -> u128;
+
     fn mint(ref self: TContractState, id: u128);
+
+    fn set_main_id(ref self: TContractState, id: u128);
 
     // todo: add support for multifelts data
 

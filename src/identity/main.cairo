@@ -19,6 +19,7 @@ mod Identity {
         owner_by_id: LegacyMap<u128, ContractAddress>,
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
+        main_id_by_addr: LegacyMap<ContractAddress, u128>,
     }
 
     #[constructor]
@@ -29,6 +30,10 @@ mod Identity {
         fn owner_of(self: @ContractState, id: u128) -> ContractAddress {
             // todo: when components are ready, use ERC721
             self.owner_by_id.read(id)
+        }
+
+        fn get_main_id(self: @ContractState, user: ContractAddress) -> u128 {
+            self.main_id_by_addr.read(user)
         }
 
         fn get_user_data(
@@ -69,6 +74,13 @@ mod Identity {
                 self.owner_by_id.write(id, get_caller_address());
             }
         }
+
+        fn set_main_id(ref self: ContractState, id: u128) {
+            let caller = get_caller_address();
+            assert(caller == self.owner_by_id.read(id), 'you don\'t own this id');
+            self.main_id_by_addr.write(caller, id);
+        }
+
 
         fn set_user_data(
             ref self: ContractState, id: u128, field: felt252, data: felt252, domain: felt252
