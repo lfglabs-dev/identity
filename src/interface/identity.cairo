@@ -22,6 +22,8 @@ trait IIdentity<TContractState> {
 
     fn set_main_id(ref self: TContractState, id: u128);
 
+    fn reset_main_id(ref self: TContractState);
+
     // todo: add support for multifelts data
 
     fn set_user_data(
