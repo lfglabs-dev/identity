@@ -1,7 +1,7 @@
 [package]
 name = "identity"
 version = "0.1.0"
-cairo-version = "2.1.0"
+cairo-version = "2.2.0"
 authors = ["th0rgal <thomas@starknet.id>"]
 description = "Contract of the starknet identity base NFT built for compiler version 2.1.0"
 repository = "https://github.com/starknet-id/identity"
@@ -9,7 +9,7 @@ repository = "https://github.com/starknet-id/identity"
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest
 
 [dependencies]
-starknet = "2.1.0"
+starknet = "2.2.0"
 
 [[target.starknet-contract]]
 sierra = true
