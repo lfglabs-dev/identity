@@ -8,13 +8,11 @@ use super::utils;
 use identity::interface::identity::{IIdentityDispatcher, IIdentityDispatcherTrait};
 use identity::identity::main::Identity;
 
-#[cfg(test)]
 fn deploy_identity() -> IIdentityDispatcher {
     let address = utils::deploy(Identity::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
     IIdentityDispatcher { contract_address: address }
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(20000000000)]
 fn test_user_data() {
@@ -25,7 +23,6 @@ fn test_user_data() {
     assert(identity.get_user_data(1, 'starknet', 0) == 0x123, 'wrong data');
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(20000000000)]
 fn test_verifier_data() {
