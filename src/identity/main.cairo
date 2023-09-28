@@ -3,7 +3,7 @@ mod Identity {
     use starknet::ContractAddress;
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::{get_caller_address, get_contract_address};
-    use starknet::{SyscallResultTrait, StorageBaseAddress};
+    use starknet::{SyscallResultTrait, StorageBaseAddress, storage_base_address_from_felt252};
     use traits::Into;
     use array::{ArrayTrait, SpanTrait};
     use zeroable::Zeroable;
@@ -252,7 +252,7 @@ mod Identity {
                 if length == offset.into() {
                     break ();
                 }
-                let value = self._get(domain, base, offset);
+                let value = self._get(domain, storage_base_address_from_felt252(base), offset);
                 data.append(value);
                 offset += 1;
             };
@@ -266,7 +266,7 @@ mod Identity {
             let mut data = ArrayTrait::new();
             let mut offset = 0;
             loop {
-                let value = self._get(domain, base, offset);
+                let value = self._get(domain, storage_base_address_from_felt252(base), offset);
                 if value == 0 {
                     break ();
                 }
@@ -294,13 +294,13 @@ mod Identity {
             domain: u32,
         ) {
             let base = self.compute_base_address(fn_name, params);
-            self._set(domain, base, value, offset: offset);
+            self._set(domain, storage_base_address_from_felt252(base), value, offset: offset);
         }
 
         fn _set(
             ref self: ContractState,
             domain: u32,
-            base: starknet::StorageBaseAddress,
+            base: StorageBaseAddress,
             mut value: Span<felt252>,
             offset: u8
         ) {
@@ -316,22 +316,20 @@ mod Identity {
         }
 
         fn compute_base_address(
-            self: @ContractState, fn_name: felt252, params: Span<felt252>
-        ) -> StorageBaseAddress {
-            let mut _params = params;
-            let mut tmp: felt252 = hash::LegacyHash::hash(
-                fn_name, *_params.pop_front().expect('error computing hash')
-            );
+            self: @ContractState, fn_name: felt252, mut params: Span<felt252>
+        ) -> felt252 {
+            let mut hashed = fn_name;
             loop {
-                if _params.len() == 0 {
-                    break ();
-                }
-                let hash = hash::LegacyHash::hash(
-                    tmp, *_params.pop_front().expect('error computing hash')
-                );
-                tmp = hash;
+                match params.pop_front() {
+                    Option::Some(param) => {
+                        hashed = hash::LegacyHash::hash(hashed, *param);
+                    },
+                    Option::None => {
+                        break;
+                    }
+                };
             };
-            starknet::storage_base_address_from_felt252(tmp)
+            hashed
         }
     }
 }
