@@ -102,14 +102,14 @@ mod Identity {
         ) -> Span<felt252> {
             self
                 .get_extended(
-                    USER_DATA_ADDR, array![id.into(), field].span(), 0, length.into(), domain,
+                    USER_DATA_ADDR, array![id.into(), field].span(), length.into(), domain,
                 )
         }
 
         fn get_unbounded_user_data(
             self: @ContractState, id: u128, field: felt252, domain: u32
         ) -> Span<felt252> {
-            self.get_unbounded(USER_DATA_ADDR, array![id.into(), field].span(), 0, domain,)
+            self.get_unbounded(USER_DATA_ADDR, array![id.into(), field].span(), domain,)
         }
 
 
@@ -132,7 +132,6 @@ mod Identity {
                 .get_extended(
                     VERIFIER_DATA_ADDR,
                     array![id.into(), field, verifier.into()].span(),
-                    0,
                     length.into(),
                     domain,
                 )
@@ -143,7 +142,7 @@ mod Identity {
         ) -> Span<felt252> {
             self
                 .get_unbounded(
-                    VERIFIER_DATA_ADDR, array![id.into(), field, verifier.into()].span(), 0, domain,
+                    VERIFIER_DATA_ADDR, array![id.into(), field, verifier.into()].span(), domain,
                 )
         }
 
@@ -186,7 +185,7 @@ mod Identity {
         ) {
             let caller = get_caller_address();
             assert(caller == self.owner_by_id.read(id), 'you don\'t own this id');
-            self.set(USER_DATA_ADDR, array![id.into(), field].span(), 0, data, domain);
+            self.set(USER_DATA_ADDR, array![id.into(), field].span(), data, domain);
             self
                 .emit(
                     Event::ExtendedUserDataUpdate(
@@ -217,7 +216,6 @@ mod Identity {
                 .set(
                     VERIFIER_DATA_ADDR,
                     array![id.into(), field, verifier.into()].span(),
-                    0,
                     data,
                     domain
                 );
@@ -241,7 +239,6 @@ mod Identity {
             self: @ContractState,
             fn_name: felt252,
             params: Span<felt252>,
-            offset: u8,
             length: felt252,
             domain: u32
         ) -> Span<felt252> {
@@ -252,7 +249,7 @@ mod Identity {
                 if length == offset.into() {
                     break ();
                 }
-                let value = self._get(domain, storage_base_address_from_felt252(base), offset);
+                let value = self._get(domain, storage_base_address_from_felt252(base + offset));
                 data.append(value);
                 offset += 1;
             };
@@ -260,13 +257,13 @@ mod Identity {
         }
 
         fn get_unbounded(
-            self: @ContractState, fn_name: felt252, params: Span<felt252>, offset: u8, domain: u32
+            self: @ContractState, fn_name: felt252, params: Span<felt252>, domain: u32
         ) -> Span<felt252> {
             let base = self.compute_base_address(fn_name, params);
             let mut data = ArrayTrait::new();
             let mut offset = 0;
             loop {
-                let value = self._get(domain, storage_base_address_from_felt252(base), offset);
+                let value = self._get(domain, storage_base_address_from_felt252(base + offset));
                 if value == 0 {
                     break ();
                 }
@@ -276,11 +273,9 @@ mod Identity {
             data.span()
         }
 
-        fn _get(
-            self: @ContractState, domain: u32, base: starknet::StorageBaseAddress, offset: u8,
-        ) -> felt252 {
+        fn _get(self: @ContractState, domain: u32, base: starknet::StorageBaseAddress) -> felt252 {
             starknet::storage_read_syscall(
-                domain, starknet::storage_address_from_base_and_offset(base, offset)
+                domain, starknet::storage_address_from_base_and_offset(base, 0)
             )
                 .unwrap_syscall()
         }
@@ -289,27 +284,21 @@ mod Identity {
             ref self: ContractState,
             fn_name: felt252,
             params: Span<felt252>,
-            offset: u8,
             value: Span<felt252>,
             domain: u32,
         ) {
             let base = self.compute_base_address(fn_name, params);
-            self._set(domain, storage_base_address_from_felt252(base), value, offset: offset);
+            self._set(domain, base, value);
         }
 
-        fn _set(
-            ref self: ContractState,
-            domain: u32,
-            base: StorageBaseAddress,
-            mut value: Span<felt252>,
-            offset: u8
-        ) {
-            match value.pop_front() {
-                Option::Some(v) => {
+        fn _set(ref self: ContractState, domain: u32, base: felt252, mut values: Span<felt252>,) {
+            match values.pop_back() {
+                Option::Some(value) => {
+                    let addr = storage_base_address_from_felt252(base + values.len().into());
                     starknet::storage_write_syscall(
-                        domain, starknet::storage_address_from_base_and_offset(base, offset), *v
+                        domain, starknet::storage_address_from_base_and_offset(addr, 0), *value
                     );
-                    self._set(domain, base, value, offset + 1);
+                    self._set(domain, base, values);
                 },
                 Option::None(_) => {},
             }
