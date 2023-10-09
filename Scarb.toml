@@ -1,7 +1,6 @@
 [package]
 name = "identity"
 version = "0.1.0"
-cairo-version = "2.3.0-rc0"
 authors = ["th0rgal <thomas@starknet.id>"]
 description = "Contract of the starknet identity base NFT built for compiler version 2.3.0"
 repository = "https://github.com/starknet-id/identity"
