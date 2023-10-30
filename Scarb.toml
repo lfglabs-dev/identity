@@ -9,6 +9,7 @@ repository = "https://github.com/starknet-id/identity"
 
 [dependencies]
 starknet = "2.3.0"
+storage_read = { git = "https://github.com/starknet-id/storage_read_component", branch = "master" }
 
 [[target.starknet-contract]]
 sierra = true

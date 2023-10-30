@@ -11,12 +11,17 @@ mod Identity {
     use identity::interface::identity::{IIdentity, IIdentityDispatcher, IIdentityDispatcherTrait};
     use integer::{u256_safe_divmod, u256_as_non_zero};
     use core::pedersen;
-    use debug::PrintTrait;
+    use storage_read::{main::storage_read_component, interface::IStorageRead};
 
     const USER_DATA_ADDR: felt252 =
         1043580099640415304067929596039389735845630832049981224284932480360577081706;
     const VERIFIER_DATA_ADDR: felt252 =
         304878986635684253299743444353489138340069571156984851619649640349195152192;
+
+    component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
+
+    #[abi(embed_v0)]
+    impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
 
     #[storage]
     struct Storage {
@@ -24,6 +29,8 @@ mod Identity {
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
+        #[substorage(v0)]
+        storage_read: storage_read_component::Storage,
     }
 
     // 
@@ -37,6 +44,7 @@ mod Identity {
         ExtendedVerifierDataUpdate: ExtendedVerifierDataUpdate,
         UserDataUpdate: UserDataUpdate,
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
+        StorageReadEvent: storage_read_component::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -310,12 +318,8 @@ mod Identity {
             let mut hashed = fn_name;
             loop {
                 match params.pop_front() {
-                    Option::Some(param) => {
-                        hashed = hash::LegacyHash::hash(hashed, *param);
-                    },
-                    Option::None => {
-                        break;
-                    }
+                    Option::Some(param) => { hashed = hash::LegacyHash::hash(hashed, *param); },
+                    Option::None => { break; }
                 };
             };
             hashed
