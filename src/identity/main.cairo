@@ -93,7 +93,6 @@ mod Identity {
 
     #[external(v0)]
     impl IdentityImpl of IIdentity<ContractState> {
-
         fn tokenURI(self: @ContractState, tokenId: u256) -> Array<felt252> {
             self.custom_uri.get_uri(tokenId)
         }
