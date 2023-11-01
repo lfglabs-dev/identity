@@ -2,6 +2,8 @@ use starknet::ContractAddress;
 
 #[starknet::interface]
 trait IIdentity<TContractState> {
+    fn tokenURI(self: @TContractState, tokenId: u256) -> Array<felt252>;
+
     fn owner_of(self: @TContractState, id: u128) -> ContractAddress;
 
     fn get_user_data(self: @TContractState, id: u128, field: felt252, domain: u32) -> felt252;
