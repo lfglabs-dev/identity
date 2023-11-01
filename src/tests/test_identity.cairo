@@ -9,7 +9,7 @@ use identity::interface::identity::{IIdentityDispatcher, IIdentityDispatcherTrai
 use identity::identity::main::Identity;
 
 fn deploy_identity() -> IIdentityDispatcher {
-    let address = utils::deploy(Identity::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
+    let address = utils::deploy(Identity::TEST_CLASS_HASH, array![0]);
     IIdentityDispatcher { contract_address: address }
 }
 

@@ -12,12 +12,14 @@ mod Identity {
     use integer::{u256_safe_divmod, u256_as_non_zero};
     use core::pedersen;
     use storage_read::{main::storage_read_component, interface::IStorageRead};
+    use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
 
     const USER_DATA_ADDR: felt252 =
         1043580099640415304067929596039389735845630832049981224284932480360577081706;
     const VERIFIER_DATA_ADDR: felt252 =
         304878986635684253299743444353489138340069571156984851619649640349195152192;
 
+    component!(path: custom_uri_component, storage: custom_uri, event: CustomUriEvent);
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
 
     #[abi(embed_v0)]
@@ -29,6 +31,8 @@ mod Identity {
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
+        #[substorage(v0)]
+        custom_uri: custom_uri_component::Storage,
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
     }
@@ -44,6 +48,7 @@ mod Identity {
         ExtendedVerifierDataUpdate: ExtendedVerifierDataUpdate,
         UserDataUpdate: UserDataUpdate,
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
+        CustomUriEvent: custom_uri_component::Event,
         StorageReadEvent: storage_read_component::Event
     }
 
@@ -82,10 +87,17 @@ mod Identity {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState) {}
+    fn constructor(ref self: ContractState, token_uri_base: Span<felt252>,) {
+        self.custom_uri.set_base_uri(token_uri_base);
+    }
 
     #[external(v0)]
     impl IdentityImpl of IIdentity<ContractState> {
+
+        fn tokenURI(self: @ContractState, tokenId: u256) -> Array<felt252> {
+            self.custom_uri.get_uri(tokenId)
+        }
+
         fn owner_of(self: @ContractState, id: u128) -> ContractAddress {
             // todo: when components are ready, use ERC721
             self.owner_by_id.read(id)
