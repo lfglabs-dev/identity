@@ -114,7 +114,7 @@ mod Identity {
             self.custom_uri.get_uri(tokenId)
         }
 
-        fn owner_of(self: @ContractState, id: u128) -> ContractAddress {
+        fn owner_from_id(self: @ContractState, id: u128) -> ContractAddress {
             // todo: when components are ready, use ERC721
             self.owner_by_id.read(id)
         }
