@@ -184,7 +184,6 @@ async def declare_v2(contract_name):
 
 
 async def deploy_v2(contract_name, *args):
-    print(args)
     logger.info(f"ℹ️  Deploying {contract_name}")
 
     account = await get_starknet_account()
