@@ -13,6 +13,13 @@ mod Identity {
     use core::pedersen;
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
+    use openzeppelin::{
+        account,
+        token::erc721::{
+            interface, dual721_receiver::{DualCaseERC721Receiver, DualCaseERC721ReceiverTrait}
+        },
+        introspection::{src5::SRC5 as src5_component, dual_src5::{DualCaseSRC5, DualCaseSRC5Trait}}
+    };
 
     const USER_DATA_ADDR: felt252 =
         1043580099640415304067929596039389735845630832049981224284932480360577081706;
@@ -21,9 +28,14 @@ mod Identity {
 
     component!(path: custom_uri_component, storage: custom_uri, event: CustomUriEvent);
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
-
+    component!(path: src5_component, storage: src5, event: SRC5Event);
     #[abi(embed_v0)]
     impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
+    #[abi(embed_v0)]
+    impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
+    #[abi(embed_v0)]
+    impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
+    impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
 
     #[storage]
     struct Storage {
@@ -35,6 +47,8 @@ mod Identity {
         custom_uri: custom_uri_component::Storage,
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
+        #[substorage(v0)]
+        src5: src5_component::Storage,
     }
 
     // 
@@ -48,8 +62,10 @@ mod Identity {
         ExtendedVerifierDataUpdate: ExtendedVerifierDataUpdate,
         UserDataUpdate: UserDataUpdate,
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
+        // components
         CustomUriEvent: custom_uri_component::Event,
-        StorageReadEvent: storage_read_component::Event
+        StorageReadEvent: storage_read_component::Event,
+        SRC5Event: src5_component::Event,
     }
 
     #[derive(Drop, starknet::Event)]
