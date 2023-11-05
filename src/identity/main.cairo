@@ -14,10 +14,13 @@ mod Identity {
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
     use openzeppelin::{
-        account, token::erc721::{ERC721Component},
+        account,
+        token::erc721::{
+            ERC721Component, erc721::ERC721Component::InternalTrait as ERC721InternalTrait
+        },
         introspection::{src5::SRC5Component, dual_src5::{DualCaseSRC5, DualCaseSRC5Trait}}
     };
-    use identity::identity::internal::InternalTrait;
+    use identity::identity::{internal::InternalTrait};
 
     const USER_DATA_ADDR: felt252 =
         1043580099640415304067929596039389735845630832049981224284932480360577081706;
@@ -27,10 +30,21 @@ mod Identity {
     component!(path: custom_uri_component, storage: custom_uri, event: CustomUriEvent);
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
+    component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     #[abi(embed_v0)]
     impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
     #[abi(embed_v0)]
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
+    #[abi(embed_v0)]
+    impl SRC5CamelImpl = SRC5Component::SRC5CamelImpl<ContractState>;
+    impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
+    #[abi(embed_v0)]
+    impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
+    #[abi(embed_v0)]
+    impl ERC721CamelOnlyImpl = ERC721Component::ERC721CamelOnlyImpl<ContractState>;
+    #[abi(embed_v0)]
+    impl ERC721StaticMetadataImpl =
+        identity::identity::erc721::ERC721StaticMetadataImpl<ContractState>;
 
     #[storage]
     struct Storage {
@@ -44,6 +58,8 @@ mod Identity {
         storage_read: storage_read_component::Storage,
         #[substorage(v0)]
         src5: SRC5Component::Storage,
+        #[substorage(v0)]
+        erc721: ERC721Component::Storage
     }
 
     // 
@@ -100,6 +116,7 @@ mod Identity {
 
     #[constructor]
     fn constructor(ref self: ContractState, token_uri_base: Span<felt252>,) {
+        self.erc721.initializer('Starknet.id', 'ID');
         self.custom_uri.set_base_uri(token_uri_base);
     }
 
