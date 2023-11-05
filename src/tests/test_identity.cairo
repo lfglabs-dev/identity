@@ -13,6 +13,7 @@ use identity::identity::main::Identity;
 #[available_gas(20000000000)]
 fn test_user_data() {
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x456>());
     identity.mint(1);
 
     identity.set_user_data(1, 'starknet', 0x123, 0);
@@ -23,6 +24,7 @@ fn test_user_data() {
 #[available_gas(20000000000)]
 fn test_verifier_data() {
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x456>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);

@@ -63,7 +63,6 @@ mod Identity {
 
     #[storage]
     struct Storage {
-        owner_by_id: LegacyMap<u128, ContractAddress>,
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
@@ -159,8 +158,7 @@ mod Identity {
         }
 
         fn owner_from_id(self: @ContractState, id: u128) -> ContractAddress {
-            // todo: when components are ready, use ERC721
-            self.owner_by_id.read(id)
+            self.erc721._owner_of(u256 { low: id, high: 0 })
         }
 
         fn get_main_id(self: @ContractState, user: ContractAddress) -> u128 {
@@ -234,16 +232,13 @@ mod Identity {
         }
 
         fn mint(ref self: ContractState, id: u128) {
-            // todo: when components are ready, use ERC721
-            if self.owner_by_id.read(id).into() == 0 {
-                self.owner_by_id.write(id, get_caller_address());
-            }
+            self.erc721._mint(get_caller_address(), id.into());
         }
 
         fn set_main_id(ref self: ContractState, id: u128) {
             // todo: add event
             let caller = get_caller_address();
-            assert(caller == self.owner_by_id.read(id), 'you don\'t own this id');
+            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
             self.main_id_by_addr.write(caller, id);
         }
 
@@ -264,7 +259,7 @@ mod Identity {
             ref self: ContractState, id: u128, field: felt252, data: Span<felt252>, domain: u32
         ) {
             let caller = get_caller_address();
-            assert(caller == self.owner_by_id.read(id), 'you don\'t own this id');
+            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
             self.set(USER_DATA_ADDR, array![id.into(), field].span(), data, domain);
             self
                 .emit(

@@ -12,6 +12,7 @@ use identity::identity::main::Identity;
 #[available_gas(20000000000)]
 fn test_verifier_data() {
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x456>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);
@@ -23,6 +24,7 @@ fn test_verifier_data() {
 #[available_gas(20000000000)]
 fn test_extended_verifier_data() {
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x156763>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);
@@ -40,6 +42,7 @@ fn test_extended_verifier_data() {
 fn test_get_extended_verifier_data_len_1() {
     // It should test that data written with set_verifier_data is correctly fetched with get_extended_user_data
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x456>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);
@@ -56,6 +59,7 @@ fn test_set_extended_verifier_data_len_1() {
     // It should test that writing extended verifier data of length 1
     // fetching with get_verifier_data returns the correct value
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x456>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);
@@ -67,6 +71,7 @@ fn test_set_extended_verifier_data_len_1() {
 #[available_gas(20000000000)]
 fn test_unbounded_verifier_data() {
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x456>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);
@@ -112,6 +117,7 @@ fn test_unbounded_user_data() {
 #[should_panic(expected: ('you don\'t own this id', 'ENTRYPOINT_FAILED'))]
 fn test_set_user_data_not_owner() {
     let identity = deploy_identity();
+    set_contract_address(contract_address_const::<0x789>());
     identity.mint(1);
     let caller = contract_address_const::<0x456>();
     set_contract_address(caller);
