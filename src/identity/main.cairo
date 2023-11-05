@@ -14,7 +14,7 @@ mod Identity {
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
     use openzeppelin::{
-        account,
+        account, access::ownable::{OwnableComponent},
         token::erc721::{
             ERC721Component, erc721::ERC721Component::InternalTrait as ERC721InternalTrait
         },
@@ -31,20 +31,31 @@ mod Identity {
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
-    #[abi(embed_v0)]
-    impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+
+    // allow to check what interface is supported
     #[abi(embed_v0)]
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
     #[abi(embed_v0)]
     impl SRC5CamelImpl = SRC5Component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
+    // make it a NFT
     #[abi(embed_v0)]
     impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
     #[abi(embed_v0)]
     impl ERC721CamelOnlyImpl = ERC721Component::ERC721CamelOnlyImpl<ContractState>;
+    // allow to query name of nft collection
     #[abi(embed_v0)]
     impl ERC721StaticMetadataImpl =
         identity::identity::erc721::ERC721StaticMetadataImpl<ContractState>;
+    // allow to query nft metadata json
+    #[abi(embed_v0)]
+    impl StorageReadImpl = storage_read_component::StorageRead<ContractState>;
+    // add an owner
+    #[abi(embed_v0)]
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+
 
     #[storage]
     struct Storage {
@@ -59,7 +70,9 @@ mod Identity {
         #[substorage(v0)]
         src5: SRC5Component::Storage,
         #[substorage(v0)]
-        erc721: ERC721Component::Storage
+        erc721: ERC721Component::Storage,
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage
     }
 
     // 
@@ -77,7 +90,8 @@ mod Identity {
         CustomUriEvent: custom_uri_component::Event,
         StorageReadEvent: storage_read_component::Event,
         SRC5Event: SRC5Component::Event,
-        ERC721Event: ERC721Component::Event
+        ERC721Event: ERC721Component::Event,
+        OwnableEvent: OwnableComponent::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -115,7 +129,8 @@ mod Identity {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, token_uri_base: Span<felt252>,) {
+    fn constructor(ref self: ContractState, owner: ContractAddress, token_uri_base: Span<felt252>,) {
+        self.ownable.initializer(owner);
         self.erc721.initializer('Starknet.id', 'ID');
         self.custom_uri.set_base_uri(token_uri_base);
     }

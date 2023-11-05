@@ -4,14 +4,9 @@ use zeroable::Zeroable;
 use traits::Into;
 use starknet::{ContractAddress, contract_address_const};
 use starknet::testing::set_contract_address;
-use super::utils;
+use super::utils::deploy_identity;
 use identity::interface::identity::{IIdentityDispatcher, IIdentityDispatcherTrait};
 use identity::identity::main::Identity;
-
-fn deploy_identity() -> IIdentityDispatcher {
-    let address = utils::deploy(Identity::TEST_CLASS_HASH, array![0]);
-    IIdentityDispatcher { contract_address: address }
-}
 
 #[test]
 #[available_gas(20000000000)]
