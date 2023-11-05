@@ -14,11 +14,8 @@ mod Identity {
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
     use openzeppelin::{
-        account,
-        token::erc721::{
-            interface, dual721_receiver::{DualCaseERC721Receiver, DualCaseERC721ReceiverTrait}
-        },
-        introspection::{src5::SRC5 as src5_component, dual_src5::{DualCaseSRC5, DualCaseSRC5Trait}}
+        account, token::erc721::{ERC721Component},
+        introspection::{src5::SRC5Component, dual_src5::{DualCaseSRC5, DualCaseSRC5Trait}}
     };
     use identity::identity::internal::InternalTrait;
 
@@ -29,14 +26,11 @@ mod Identity {
 
     component!(path: custom_uri_component, storage: custom_uri, event: CustomUriEvent);
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
-    component!(path: src5_component, storage: src5, event: SRC5Event);
+    component!(path: SRC5Component, storage: src5, event: SRC5Event);
     #[abi(embed_v0)]
     impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
     #[abi(embed_v0)]
-    impl SRC5Impl = src5_component::SRC5Impl<ContractState>;
-    #[abi(embed_v0)]
-    impl SRC5CamelImpl = src5_component::SRC5CamelImpl<ContractState>;
-    impl SRC5InternalImpl = src5_component::InternalImpl<ContractState>;
+    impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
 
     #[storage]
     struct Storage {
@@ -49,7 +43,7 @@ mod Identity {
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
         #[substorage(v0)]
-        src5: src5_component::Storage,
+        src5: SRC5Component::Storage,
     }
 
     // 
@@ -66,7 +60,8 @@ mod Identity {
         // components
         CustomUriEvent: custom_uri_component::Event,
         StorageReadEvent: storage_read_component::Event,
-        SRC5Event: src5_component::Event,
+        SRC5Event: SRC5Component::Event,
+        ERC721Event: ERC721Component::Event
     }
 
     #[derive(Drop, starknet::Event)]

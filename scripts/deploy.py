@@ -20,10 +20,9 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 # https://api.starknet.id/uri?id=
-MAINNET_CONST = [1, 0x68747470733A2F2F6170692E737461726B6E65742E69642F7572693F69643D]
+MAINNET_CONST = [0x68747470733A2F2F6170692E737461726B6E65742E69642F7572693F69643D]
 # https://goerli.api.starknet.id/uri?id="
 GOERLI_CONST = [
-    2,
     0x68747470733A2F2F676F65726C692E6170692E737461726B6E65742E69642F,
     0x7572693F69643D,
 ]
@@ -43,7 +42,7 @@ async def main():
 
     deployments = {}
     deployments["identity_Identity"] = await deploy_v2(
-        "identity_Identity", *(MAINNET_CONST if NETWORK == "mainnet" else GOERLI_CONST)
+        "identity_Identity", (MAINNET_CONST if NETWORK == "mainnet" else GOERLI_CONST)
     )
 
     dump_deployments(deployments)

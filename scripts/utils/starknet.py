@@ -130,11 +130,11 @@ def get_tx_url(tx_hash: int) -> str:
 
 
 def get_sierra_artifact(contract_name):
-    return BUILD_DIR / f"{contract_name}.sierra.json"
+    return BUILD_DIR / f"{contract_name}.contract_class.json"
 
 
 def get_casm_artifact(contract_name):
-    return BUILD_DIR / f"{contract_name}.casm.json"
+    return BUILD_DIR / f"{contract_name}.compiled_contract_class.json"
 
 
 def get_abi(contract_name):
