@@ -14,7 +14,8 @@ mod Identity {
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
     use openzeppelin::{
-        account, access::ownable::{OwnableComponent},
+        account, access::ownable::OwnableComponent,
+        upgrades::{UpgradeableComponent, interface::IUpgradeable},
         token::erc721::{
             ERC721Component, erc721::ERC721Component::InternalTrait as ERC721InternalTrait
         },
@@ -32,6 +33,8 @@ mod Identity {
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+
 
     // allow to check what interface is supported
     #[abi(embed_v0)]
@@ -55,7 +58,8 @@ mod Identity {
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
-
+    // make it upgradable
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 
     #[storage]
     struct Storage {
@@ -72,7 +76,9 @@ mod Identity {
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
-        ownable: OwnableComponent::Storage
+        ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage
     }
 
     // 
@@ -91,7 +97,8 @@ mod Identity {
         StorageReadEvent: storage_read_component::Event,
         SRC5Event: SRC5Component::Event,
         ERC721Event: ERC721Component::Event,
-        OwnableEvent: OwnableComponent::Event
+        OwnableEvent: OwnableComponent::Event,
+        UpgradeableEvent: UpgradeableComponent::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -129,10 +136,20 @@ mod Identity {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress, token_uri_base: Span<felt252>,) {
+    fn constructor(
+        ref self: ContractState, owner: ContractAddress, token_uri_base: Span<felt252>,
+    ) {
         self.ownable.initializer(owner);
         self.erc721.initializer('Starknet.id', 'ID');
         self.custom_uri.set_base_uri(token_uri_base);
+    }
+
+    #[external(v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            self.ownable.assert_only_owner();
+            self.upgradeable._upgrade(new_class_hash);
+        }
     }
 
     #[external(v0)]
