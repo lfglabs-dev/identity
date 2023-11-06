@@ -301,5 +301,10 @@ mod Identity {
                     )
                 );
         }
+
+        // this function should be called after upgrading from Cairo 0 contract
+        fn finalize_migration(ref self: ContractState, token_uri_base: Span<felt252>) {
+            self.custom_uri.set_base_uri(token_uri_base);
+        }
     }
 }
