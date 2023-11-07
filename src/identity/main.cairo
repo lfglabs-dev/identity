@@ -49,8 +49,8 @@ mod Identity {
     impl ERC721CamelOnlyImpl = ERC721Component::ERC721CamelOnlyImpl<ContractState>;
     // allow to query name of nft collection
     #[abi(embed_v0)]
-    impl ERC721StaticMetadataImpl =
-        identity::identity::erc721::ERC721StaticMetadataImpl<ContractState>;
+    impl IERC721MetadataImpl =
+        identity::identity::erc721::IERC721MetadataImpl<ContractState>;
     // allow to query nft metadata json
     #[abi(embed_v0)]
     impl StorageReadImpl = storage_read_component::StorageRead<ContractState>;
@@ -155,10 +155,6 @@ mod Identity {
 
     #[external(v0)]
     impl IdentityImpl of IIdentity<ContractState> {
-        fn tokenURI(self: @ContractState, tokenId: u256) -> Array<felt252> {
-            self.custom_uri.get_uri(tokenId)
-        }
-
         fn owner_from_id(self: @ContractState, id: u128) -> ContractAddress {
             self.erc721._owner_of(u256 { low: id, high: 0 })
         }
