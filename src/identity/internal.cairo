@@ -3,7 +3,7 @@ use starknet::{SyscallResultTrait, storage_base_address_from_felt252};
 
 #[generate_trait]
 impl InternalImpl of InternalTrait {
-    // todo: move these functions into a storage contract when components are available
+
     fn get_extended(
         self: @Identity::ContractState,
         fn_name: felt252,
