@@ -34,9 +34,7 @@ NETWORKS = {
 }
 
 VARS = NETWORKS[os.getenv("STARKNET_NETWORK", "devnet")]
-VARS["account_address"] = os.environ.get(
-    f"{VARS['name'].upper()}_ACCOUNT_ADDRESS"
-)
+VARS["account_address"] = os.environ.get(f"{VARS['name'].upper()}_ACCOUNT_ADDRESS")
 if VARS["account_address"] is None:
     logger.warning(
         f"⚠️ {VARS['name'].upper()}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
@@ -63,7 +61,7 @@ GATEWAY_CLIENT = GatewayClient(
 )
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
-ETH_CLASS_HASH = 0x6a22bf63c7bc07effa39a25dfbd21523d211db0100a0afd054d172b81840eaf
+ETH_CLASS_HASH = 0x6A22BF63C7BC07EFFA39A25DFBD21523D211DB0100A0AFD054D172B81840EAF
 SOURCE_DIR = Path("src")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
 

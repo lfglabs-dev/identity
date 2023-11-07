@@ -2,9 +2,7 @@ use starknet::ContractAddress;
 
 #[starknet::interface]
 trait IIdentity<TContractState> {
-    fn tokenURI(self: @TContractState, tokenId: u256) -> Array<felt252>;
-
-    fn owner_of(self: @TContractState, id: u128) -> ContractAddress;
+    fn owner_from_id(self: @TContractState, id: u128) -> ContractAddress;
 
     fn get_user_data(self: @TContractState, id: u128, field: felt252, domain: u32) -> felt252;
 
@@ -47,8 +45,6 @@ trait IIdentity<TContractState> {
 
     fn reset_main_id(ref self: TContractState);
 
-    // todo: add support for multifelts data
-
     fn set_user_data(
         ref self: TContractState, id: u128, field: felt252, data: felt252, domain: u32
     );
@@ -64,4 +60,6 @@ trait IIdentity<TContractState> {
     fn set_extended_verifier_data(
         ref self: TContractState, id: u128, field: felt252, data: Span<felt252>, domain: u32
     );
+
+    fn finalize_migration(ref self: TContractState, token_uri_base: Span<felt252>);
 }

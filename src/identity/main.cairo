@@ -13,6 +13,15 @@ mod Identity {
     use core::pedersen;
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
+    use openzeppelin::{
+        account, access::ownable::OwnableComponent,
+        upgrades::{UpgradeableComponent, interface::IUpgradeable},
+        token::erc721::{
+            ERC721Component, erc721::ERC721Component::InternalTrait as ERC721InternalTrait
+        },
+        introspection::{src5::SRC5Component, dual_src5::{DualCaseSRC5, DualCaseSRC5Trait}}
+    };
+    use identity::identity::{internal::InternalTrait};
 
     const USER_DATA_ADDR: felt252 =
         1043580099640415304067929596039389735845630832049981224284932480360577081706;
@@ -21,20 +30,56 @@ mod Identity {
 
     component!(path: custom_uri_component, storage: custom_uri, event: CustomUriEvent);
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
+    component!(path: SRC5Component, storage: src5, event: SRC5Event);
+    component!(path: ERC721Component, storage: erc721, event: ERC721Event);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
 
+
+    // allow to check what interface is supported
     #[abi(embed_v0)]
-    impl StorageReadComponent = storage_read_component::StorageRead<ContractState>;
+    impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
+    #[abi(embed_v0)]
+    impl SRC5CamelImpl = SRC5Component::SRC5CamelImpl<ContractState>;
+    impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
+    // make it a NFT
+    #[abi(embed_v0)]
+    impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
+    #[abi(embed_v0)]
+    impl ERC721CamelOnlyImpl = ERC721Component::ERC721CamelOnlyImpl<ContractState>;
+    // allow to query name of nft collection
+    #[abi(embed_v0)]
+    impl IERC721MetadataImpl =
+        identity::identity::erc721::IERC721MetadataImpl<ContractState>;
+    // allow to query nft metadata json
+    #[abi(embed_v0)]
+    impl StorageReadImpl = storage_read_component::StorageRead<ContractState>;
+    // add an owner
+    #[abi(embed_v0)]
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+    // make it upgradable
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 
     #[storage]
     struct Storage {
-        owner_by_id: LegacyMap<u128, ContractAddress>,
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
+        // legacy owner
+        Proxy_admin: felt252,
         #[substorage(v0)]
         custom_uri: custom_uri_component::Storage,
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
+        #[substorage(v0)]
+        src5: SRC5Component::Storage,
+        #[substorage(v0)]
+        erc721: ERC721Component::Storage,
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage
     }
 
     // 
@@ -48,8 +93,13 @@ mod Identity {
         ExtendedVerifierDataUpdate: ExtendedVerifierDataUpdate,
         UserDataUpdate: UserDataUpdate,
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
+        // components
         CustomUriEvent: custom_uri_component::Event,
-        StorageReadEvent: storage_read_component::Event
+        StorageReadEvent: storage_read_component::Event,
+        SRC5Event: SRC5Component::Event,
+        ERC721Event: ERC721Component::Event,
+        OwnableEvent: OwnableComponent::Event,
+        UpgradeableEvent: UpgradeableComponent::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -87,19 +137,26 @@ mod Identity {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, token_uri_base: Span<felt252>,) {
+    fn constructor(
+        ref self: ContractState, owner: ContractAddress, token_uri_base: Span<felt252>,
+    ) {
+        self.ownable.initializer(owner);
+        self.erc721.initializer('Starknet.id', 'ID');
         self.custom_uri.set_base_uri(token_uri_base);
     }
 
     #[external(v0)]
-    impl IdentityImpl of IIdentity<ContractState> {
-        fn tokenURI(self: @ContractState, tokenId: u256) -> Array<felt252> {
-            self.custom_uri.get_uri(tokenId)
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            self.ownable.assert_only_owner();
+            self.upgradeable._upgrade(new_class_hash);
         }
+    }
 
-        fn owner_of(self: @ContractState, id: u128) -> ContractAddress {
-            // todo: when components are ready, use ERC721
-            self.owner_by_id.read(id)
+    #[external(v0)]
+    impl IdentityImpl of IIdentity<ContractState> {
+        fn owner_from_id(self: @ContractState, id: u128) -> ContractAddress {
+            self.erc721._owner_of(u256 { low: id, high: 0 })
         }
 
         fn get_main_id(self: @ContractState, user: ContractAddress) -> u128 {
@@ -173,16 +230,13 @@ mod Identity {
         }
 
         fn mint(ref self: ContractState, id: u128) {
-            // todo: when components are ready, use ERC721
-            if self.owner_by_id.read(id).into() == 0 {
-                self.owner_by_id.write(id, get_caller_address());
-            }
+            self.erc721._mint(get_caller_address(), id.into());
         }
 
         fn set_main_id(ref self: ContractState, id: u128) {
             // todo: add event
             let caller = get_caller_address();
-            assert(caller == self.owner_by_id.read(id), 'you don\'t own this id');
+            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
             self.main_id_by_addr.write(caller, id);
         }
 
@@ -203,7 +257,7 @@ mod Identity {
             ref self: ContractState, id: u128, field: felt252, data: Span<felt252>, domain: u32
         ) {
             let caller = get_caller_address();
-            assert(caller == self.owner_by_id.read(id), 'you don\'t own this id');
+            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
             self.set(USER_DATA_ADDR, array![id.into(), field].span(), data, domain);
             self
                 .emit(
@@ -245,95 +299,13 @@ mod Identity {
                     )
                 );
         }
-    }
 
-    //
-    // Internals
-    //
-
-    #[generate_trait]
-    impl InternalImpl of InternalTrait {
-        // todo: move these functions into a storage contract when components are available
-        fn get_extended(
-            self: @ContractState,
-            fn_name: felt252,
-            params: Span<felt252>,
-            length: felt252,
-            domain: u32
-        ) -> Span<felt252> {
-            let base = self.compute_base_address(fn_name, params);
-            let mut data = ArrayTrait::new();
-            let mut offset = 0;
-            loop {
-                if length == offset.into() {
-                    break ();
-                }
-                let value = self._get(domain, storage_base_address_from_felt252(base + offset));
-                data.append(value);
-                offset += 1;
-            };
-            data.span()
-        }
-
-        fn get_unbounded(
-            self: @ContractState, fn_name: felt252, params: Span<felt252>, domain: u32
-        ) -> Span<felt252> {
-            let base = self.compute_base_address(fn_name, params);
-            let mut data = ArrayTrait::new();
-            let mut offset = 0;
-            loop {
-                let value = self._get(domain, storage_base_address_from_felt252(base + offset));
-                if value == 0 {
-                    break ();
-                }
-                data.append(value);
-                offset += 1;
-            };
-            data.span()
-        }
-
-        fn _get(self: @ContractState, domain: u32, base: starknet::StorageBaseAddress) -> felt252 {
-            starknet::storage_read_syscall(
-                domain, starknet::storage_address_from_base_and_offset(base, 0)
-            )
-                .unwrap_syscall()
-        }
-
-        fn set(
-            ref self: ContractState,
-            fn_name: felt252,
-            params: Span<felt252>,
-            value: Span<felt252>,
-            domain: u32,
-        ) {
-            let base = self.compute_base_address(fn_name, params);
-            self._set(domain, base, value);
-        }
-
-        fn _set(ref self: ContractState, domain: u32, base: felt252, mut values: Span<felt252>,) {
-            match values.pop_back() {
-                Option::Some(value) => {
-                    let addr = storage_base_address_from_felt252(base + values.len().into());
-                    starknet::storage_write_syscall(
-                        domain, starknet::storage_address_from_base_and_offset(addr, 0), *value
-                    );
-                    self._set(domain, base, values);
-                },
-                Option::None(_) => {},
-            }
-        }
-
-        fn compute_base_address(
-            self: @ContractState, fn_name: felt252, mut params: Span<felt252>
-        ) -> felt252 {
-            let mut hashed = fn_name;
-            loop {
-                match params.pop_front() {
-                    Option::Some(param) => { hashed = hash::LegacyHash::hash(hashed, *param); },
-                    Option::None => { break; }
-                };
-            };
-            hashed
+        // this function should be called after upgrading from Cairo 0 contract
+        fn finalize_migration(ref self: ContractState, token_uri_base: Span<felt252>) {
+            let caller = get_caller_address();
+            assert(caller.into() == self.Proxy_admin.read(), 'only proxy admin can migrate');
+            self.ownable.initializer(caller);
+            self.custom_uri.set_base_uri(token_uri_base);
         }
     }
 }
