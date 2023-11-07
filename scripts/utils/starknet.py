@@ -162,7 +162,7 @@ async def declare_v2(contract_name):
     # Check has not been declared before
     try:
         await GATEWAY_CLIENT.get_class_by_hash(class_hash=sierra_class_hash)
-        logger.info(f"✅ Class already declared, skipping")
+        logger.info(f"✅ Class {hex(sierra_class_hash)} already declared, skipping")
         return sierra_class_hash
     except Exception:
         pass

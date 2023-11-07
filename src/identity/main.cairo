@@ -66,6 +66,8 @@ mod Identity {
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
+        // legacy owner
+        Proxy_admin: felt252,
         #[substorage(v0)]
         custom_uri: custom_uri_component::Storage,
         #[substorage(v0)]
@@ -304,6 +306,9 @@ mod Identity {
 
         // this function should be called after upgrading from Cairo 0 contract
         fn finalize_migration(ref self: ContractState, token_uri_base: Span<felt252>) {
+            let caller = get_caller_address();
+            assert(caller.into() == self.Proxy_admin.read(), 'only proxy admin can migrate');
+            self.ownable.initializer(caller);
             self.custom_uri.set_base_uri(token_uri_base);
         }
     }
