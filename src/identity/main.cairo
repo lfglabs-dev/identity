@@ -93,6 +93,7 @@ mod Identity {
         ExtendedVerifierDataUpdate: ExtendedVerifierDataUpdate,
         UserDataUpdate: UserDataUpdate,
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
+        MainIdUpdate: MainIdUpdate,
         // components
         CustomUriEvent: custom_uri_component::Event,
         StorageReadEvent: storage_read_component::Event,
@@ -136,6 +137,13 @@ mod Identity {
         _data: Span<felt252>,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct MainIdUpdate {
+        #[key]
+        owner: ContractAddress,
+        id: u128,
+    }
+
     #[constructor]
     fn constructor(
         ref self: ContractState, owner: ContractAddress, token_uri_base: Span<felt252>,
@@ -160,7 +168,13 @@ mod Identity {
         }
 
         fn get_main_id(self: @ContractState, user: ContractAddress) -> u128 {
-            self.main_id_by_addr.read(user)
+            let main_id = self.main_id_by_addr.read(user);
+            if self.erc721._owner_of(main_id.into()) == user {
+                main_id
+            } else {
+                // if you transfer your main_id to someone, it is no longer your main_id
+                0
+            }
         }
 
         fn get_user_data(self: @ContractState, id: u128, field: felt252, domain: u32) -> felt252 {
@@ -234,15 +248,19 @@ mod Identity {
         }
 
         fn set_main_id(ref self: ContractState, id: u128) {
-            // todo: add event
             let caller = get_caller_address();
             assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
             self.main_id_by_addr.write(caller, id);
+            self.emit(Event::MainIdUpdate(MainIdUpdate { id, owner: caller }));
         }
 
         fn reset_main_id(ref self: ContractState) {
-            // todo: add event
+            let id = self.main_id_by_addr.read(get_caller_address());
             self.main_id_by_addr.write(get_caller_address(), 0);
+            self
+                .emit(
+                    Event::MainIdUpdate(MainIdUpdate { id, owner: ContractAddressZeroable::zero() })
+                );
         }
 
         fn set_user_data(
