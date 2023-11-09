@@ -95,11 +95,17 @@ mod Identity {
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
         MainIdUpdate: MainIdUpdate,
         // components
+        #[flat]
         CustomUriEvent: custom_uri_component::Event,
+        #[flat]
         StorageReadEvent: storage_read_component::Event,
+        #[flat]
         SRC5Event: SRC5Component::Event,
+        #[flat]
         ERC721Event: ERC721Component::Event,
+        #[flat]
         OwnableEvent: OwnableComponent::Event,
+        #[flat]
         UpgradeableEvent: UpgradeableComponent::Event
     }
 
