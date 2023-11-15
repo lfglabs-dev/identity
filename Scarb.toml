@@ -9,7 +9,7 @@ repository = "https://github.com/starknet-id/identity"
 
 [dependencies]
 starknet = "2.3.1"
-openzeppelin = { git = "https://github.com/andrew-fleming/cairo-contracts.git", branch = "component-erc721" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", rev = "f3e2a5f0547a429c716f32471b06df729cbdfb9f" }
 storage_read = { git = "https://github.com/starknet-id/storage_read_component", rev = "c6c69e15d34abfc39ac51dc21b96724e2e19ff31" }
 custom_uri = { git = "https://github.com/starknet-id/custom_uri_component", rev = "abb2f3d43c7be56dd5cd9f93c33af40b272c2245" }
 
