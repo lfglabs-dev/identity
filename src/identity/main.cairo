@@ -170,7 +170,7 @@ mod Identity {
     #[external(v0)]
     impl IdentityImpl of IIdentity<ContractState> {
         fn owner_from_id(self: @ContractState, id: u128) -> ContractAddress {
-            self.erc721._owner_of(u256 { low: id, high: 0 })
+            self.erc721.ERC721_owners.read(u256 { low: id, high: 0 })
         }
 
         fn get_main_id(self: @ContractState, user: ContractAddress) -> u128 {
