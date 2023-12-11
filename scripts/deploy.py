@@ -42,7 +42,7 @@ async def main():
 
     deployments = {}
     deployments["identity_Identity"] = await deploy_v2(
-        "identity_Identity", (MAINNET_CONST if NETWORK == "mainnet" else GOERLI_CONST)
+        "identity_Identity", account.address, (MAINNET_CONST if NETWORK == "mainnet" else GOERLI_CONST)
     )
 
     dump_deployments(deployments)
