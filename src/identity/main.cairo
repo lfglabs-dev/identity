@@ -272,7 +272,8 @@ mod Identity {
         fn set_user_data(
             ref self: ContractState, id: u128, field: felt252, data: felt252, domain: u32
         ) {
-            // todo: when volition comes, handle the domain
+            let caller = get_caller_address();
+            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
             self.user_data.write((id, field), data);
             self.emit(Event::UserDataUpdate(UserDataUpdate { id, field, _data: data }))
         }
