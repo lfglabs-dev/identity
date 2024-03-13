@@ -175,7 +175,7 @@ mod Identity {
 
         fn get_main_id(self: @ContractState, user: ContractAddress) -> u128 {
             let main_id = self.main_id_by_addr.read(user);
-            if self.erc721._owner_of(main_id.into()) == user {
+            if self.owner_from_id(main_id) == user {
                 main_id
             } else {
                 // if you transfer your main_id to someone, it is no longer your main_id
@@ -255,7 +255,7 @@ mod Identity {
 
         fn set_main_id(ref self: ContractState, id: u128) {
             let caller = get_caller_address();
-            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
+            assert(caller == self.owner_from_id(id), 'you don\'t own this id');
             self.main_id_by_addr.write(caller, id);
             self.emit(Event::MainIdUpdate(MainIdUpdate { id, owner: caller }));
         }
@@ -273,7 +273,7 @@ mod Identity {
             ref self: ContractState, id: u128, field: felt252, data: felt252, domain: u32
         ) {
             let caller = get_caller_address();
-            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
+            assert(caller == self.owner_from_id(id), 'you don\'t own this id');
             self.user_data.write((id, field), data);
             self.emit(Event::UserDataUpdate(UserDataUpdate { id, field, _data: data }))
         }
@@ -282,7 +282,7 @@ mod Identity {
             ref self: ContractState, id: u128, field: felt252, data: Span<felt252>, domain: u32
         ) {
             let caller = get_caller_address();
-            assert(caller == self.erc721._owner_of(id.into()), 'you don\'t own this id');
+            assert(caller == self.owner_from_id(id), 'you don\'t own this id');
             self.set(USER_DATA_ADDR, array![id.into(), field].span(), data, domain);
             self
                 .emit(
