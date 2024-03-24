@@ -5,3 +5,5 @@ requests
 cairo-lang
 aiohttp>=3.9.2 # not directly required, pinned by Snyk to avoid a vulnerability
 eth-abi>=5.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
+sympy>=1.12 # not directly required, pinned by Snyk to avoid a vulnerability
