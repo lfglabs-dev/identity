@@ -17,6 +17,6 @@ fn deploy(contract_class_hash: felt252, calldata: Array<felt252>) -> ContractAdd
 }
 
 fn deploy_identity() -> IIdentityDispatcher {
-    let address = deploy(Identity::TEST_CLASS_HASH, array![ADMIN, 0]);
+    let address = deploy(Identity::TEST_CLASS_HASH, array![ADMIN, 0, 0, 0]);
     IIdentityDispatcher { contract_address: address }
 }
