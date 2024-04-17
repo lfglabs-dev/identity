@@ -12,14 +12,13 @@ mod Identity {
     use integer::{u256_safe_divmod, u256_as_non_zero};
     use core::pedersen;
     use storage_read::{main::storage_read_component, interface::IStorageRead};
-    use custom_uri::{interface::IInternalCustomURI, main::custom_uri_component};
     use openzeppelin::{
         account, access::ownable::OwnableComponent,
         upgrades::{UpgradeableComponent, interface::IUpgradeable},
         token::erc721::{
             ERC721Component, erc721::ERC721Component::InternalTrait as ERC721InternalTrait
         },
-        introspection::{src5::SRC5Component, dual_src5::{DualCaseSRC5, DualCaseSRC5Trait}}
+        introspection::{src5::SRC5Component}
     };
     use identity::identity::{internal::InternalTrait};
 
@@ -28,7 +27,6 @@ mod Identity {
     const VERIFIER_DATA_ADDR: felt252 =
         304878986635684253299743444353489138340069571156984851619649640349195152192;
 
-    component!(path: custom_uri_component, storage: custom_uri, event: CustomUriEvent);
     component!(path: storage_read_component, storage: storage_read, event: StorageReadEvent);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
@@ -39,8 +37,6 @@ mod Identity {
     // allow to check what interface is supported
     #[abi(embed_v0)]
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
-    #[abi(embed_v0)]
-    impl SRC5CamelImpl = SRC5Component::SRC5CamelImpl<ContractState>;
     impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
     // make it a NFT
     #[abi(embed_v0)]
@@ -49,8 +45,7 @@ mod Identity {
     impl ERC721CamelOnlyImpl = ERC721Component::ERC721CamelOnlyImpl<ContractState>;
     // allow to query name of nft collection
     #[abi(embed_v0)]
-    impl IERC721MetadataImpl =
-        identity::identity::erc721::IERC721MetadataImpl<ContractState>;
+    impl IERC721MetadataImpl = ERC721Component::ERC721MetadataImpl<ContractState>;
     // allow to query nft metadata json
     #[abi(embed_v0)]
     impl StorageReadImpl = storage_read_component::StorageRead<ContractState>;
@@ -68,8 +63,6 @@ mod Identity {
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
         // legacy owner
         Proxy_admin: felt252,
-        #[substorage(v0)]
-        custom_uri: custom_uri_component::Storage,
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
         #[substorage(v0)]
@@ -95,8 +88,6 @@ mod Identity {
         ExtendedUserDataUpdate: ExtendedUserDataUpdate,
         MainIdUpdate: MainIdUpdate,
         // components
-        #[flat]
-        CustomUriEvent: custom_uri_component::Event,
         #[flat]
         StorageReadEvent: storage_read_component::Event,
         #[flat]
@@ -151,12 +142,9 @@ mod Identity {
     }
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState, owner: ContractAddress, token_uri_base: Span<felt252>,
-    ) {
+    fn constructor(ref self: ContractState, owner: ContractAddress, token_uri_base: ByteArray,) {
         self.ownable.initializer(owner);
-        self.erc721.initializer('Starknet.id', 'ID');
-        self.custom_uri.set_base_uri(token_uri_base);
+        self.erc721.initializer("Starknet.id", "ID", token_uri_base);
     }
 
     #[abi(embed_v0)]
@@ -323,14 +311,6 @@ mod Identity {
                         ExtendedVerifierDataUpdate { id, field, _data: data, verifier, }
                     )
                 );
-        }
-
-        // this function should be called after upgrading from Cairo 0 contract
-        fn finalize_migration(ref self: ContractState, token_uri_base: Span<felt252>) {
-            let caller = get_caller_address();
-            assert(caller.into() == self.Proxy_admin.read(), 'only proxy admin can migrate');
-            self.ownable.initializer(caller);
-            self.custom_uri.set_base_uri(token_uri_base);
         }
     }
 }
