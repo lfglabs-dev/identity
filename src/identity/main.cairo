@@ -159,7 +159,7 @@ mod Identity {
         self.custom_uri.set_base_uri(token_uri_base);
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl UpgradeableImpl of IUpgradeable<ContractState> {
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();
@@ -167,7 +167,7 @@ mod Identity {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl IdentityImpl of IIdentity<ContractState> {
         fn owner_from_id(self: @ContractState, id: u128) -> ContractAddress {
             self.erc721.ERC721_owners.read(u256 { low: id, high: 0 })
