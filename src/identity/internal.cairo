@@ -70,7 +70,7 @@ impl InternalImpl of InternalTrait {
                 let addr = storage_base_address_from_felt252(base + values.len().into());
                 starknet::storage_write_syscall(
                     domain, starknet::storage_address_from_base_and_offset(addr, 0), *value
-                );
+                ).unwrap();
                 self._set(domain, base, values);
             },
             Option::None(_) => {},
