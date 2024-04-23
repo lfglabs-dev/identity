@@ -312,5 +312,10 @@ mod Identity {
                     )
                 );
         }
+
+        fn migrate(ref self: ContractState, token_uri: ByteArray) {
+            self.ownable.assert_only_owner();
+            self.erc721.initializer("Starknet.id", "ID", token_uri);
+        }
     }
 }

@@ -9,8 +9,8 @@ repository = "https://github.com/starknet-id/identity"
 
 [dependencies]
 starknet = "2.6.3"
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", rev = "a83f36b23f1af6e160288962be4a2701c3ecbcda" }
-storage_read = { git = "https://github.com/starknet-id/storage_read_component.git", rev = "c7a640371d0336cc09b907154cbfeec743739ff9" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", rev = "0697004db74502ce49900edef37331dd03531356" }
+storage_read = { git = "https://github.com/starknet-id/storage_read_component.git", rev = "6440184cc078188d1efeab1283d1698738cde435" }
 
 [[target.starknet-contract]]
 sierra = true
