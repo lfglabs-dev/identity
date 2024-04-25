@@ -60,8 +60,4 @@ trait IIdentity<TContractState> {
     fn set_extended_verifier_data(
         ref self: TContractState, id: u128, field: felt252, data: Span<felt252>, domain: u32
     );
-
-    fn migrate(
-        ref self: TContractState, token_uri: ByteArray
-    );
 }
