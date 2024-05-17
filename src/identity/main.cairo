@@ -249,8 +249,9 @@ mod Identity {
         }
 
         fn reset_main_id(ref self: ContractState) {
-            let id = self.main_id_by_addr.read(get_caller_address());
-            self.main_id_by_addr.write(get_caller_address(), 0);
+            let caller = get_caller_address();
+            let id = self.main_id_by_addr.read(caller);
+            self.main_id_by_addr.write(caller, 0);
             self
                 .emit(
                     Event::MainIdUpdate(MainIdUpdate { id, owner: ContractAddressZeroable::zero() })
