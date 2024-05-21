@@ -61,8 +61,6 @@ mod Identity {
         user_data: LegacyMap<(u128, felt252), felt252>,
         verifier_data: LegacyMap<(u128, felt252, ContractAddress), felt252>,
         main_id_by_addr: LegacyMap<ContractAddress, u128>,
-        // legacy owner
-        Proxy_admin: felt252,
         #[substorage(v0)]
         storage_read: storage_read_component::Storage,
         #[substorage(v0)]
@@ -311,11 +309,6 @@ mod Identity {
                         ExtendedVerifierDataUpdate { id, field, _data: data, verifier, }
                     )
                 );
-        }
-
-        fn remove_proxy_admin(ref self: ContractState) {
-            self.ownable.assert_only_owner();
-            self.Proxy_admin.write(0);
         }
     }
 }
