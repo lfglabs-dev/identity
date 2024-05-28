@@ -186,7 +186,7 @@ mod Identity {
         ) -> Span<felt252> {
             self
                 .get_extended(
-                    USER_DATA_ADDR, array![id.into(), field].span(), length.into(), domain,
+                    USER_DATA_ADDR, array![id.into(), field].span(), length, domain,
                 )
         }
 
@@ -216,7 +216,7 @@ mod Identity {
                 .get_extended(
                     VERIFIER_DATA_ADDR,
                     array![id.into(), field, verifier.into()].span(),
-                    length.into(),
+                    length,
                     domain,
                 )
         }
