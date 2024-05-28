@@ -2,15 +2,13 @@
 mod Identity {
     use starknet::ContractAddress;
     use starknet::contract_address::ContractAddressZeroable;
-    use starknet::{get_caller_address, get_contract_address};
+    use starknet::get_caller_address;
     use starknet::{SyscallResultTrait, StorageBaseAddress, storage_base_address_from_felt252};
     use traits::Into;
     use array::{ArrayTrait, SpanTrait};
     use zeroable::Zeroable;
     use starknet::class_hash::ClassHash;
     use identity::interface::identity::{IIdentity, IIdentityDispatcher, IIdentityDispatcherTrait};
-    use integer::{u256_safe_divmod, u256_as_non_zero};
-    use core::pedersen;
     use storage_read::{main::storage_read_component, interface::IStorageRead};
     use openzeppelin::{
         account, access::ownable::OwnableComponent,
