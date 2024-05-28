@@ -311,5 +311,10 @@ mod Identity {
                     )
                 );
         }
+
+        fn remove_proxy_admin(ref self: ContractState) {
+            self.ownable.assert_only_owner();
+            self.Proxy_admin.write(0);
+        }
     }
 }
