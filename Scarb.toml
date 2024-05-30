@@ -17,6 +17,9 @@ sierra = true
 casm = true
 casm-add-pythonic-hints = true
 
+[tool.voyager]
+identity = { path = "src/identity.cairo" }
+
 [lib]
 sierra = true
 casm = false
