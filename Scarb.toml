@@ -18,7 +18,7 @@ casm = true
 casm-add-pythonic-hints = true
 
 [tool.voyager]
-my_contract = { path = "src/identity.cairo" }
+identity = { path = "src/identity.cairo" }
 
 [lib]
 sierra = true
